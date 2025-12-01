@@ -1,0 +1,159 @@
+import tkinter as tk
+from tkinter import messagebox
+
+class Barang:
+    def __init__(self, nama="", jumlah=0, harga=0):
+        self.nama = nama
+        self.jumlah = jumlah
+        self.harga = harga
+
+    def setNama(self, nama):
+        self.nama = nama
+
+    def setJumlah(self, jumlah):
+        self.jumlah = jumlah
+
+    def setHarga(self, harga):
+        self.harga = harga
+
+    def __str__(self):
+        return f"{self.nama} | Jumlah: {self.jumlah} | Harga: Rp{self.harga}"
+
+
+class AplikasiInventaris:
+    def __init__(self, app):
+        self.app = app
+        app.title("Aplikasi Manajemen Inventaris")
+        app.geometry("650x600")
+        app.configure(bg="#dfdff5")
+
+        self.data = []
+
+        # Judul
+        tk.Label(app, text="Aplikasi Inventaris Barang",
+                 font=("Arial", 22, "bold"), fg="#4b0082",
+                 bg="#dfdff5").pack(pady=20)
+
+        # Frame Input
+        frame = tk.Frame(app, bg="#dfdff5")
+        frame.pack()
+
+        tk.Label(frame, text="Nama Barang :", font=("Arial", 14),
+                 bg="#dfdff5").grid(row=0, column=0, sticky="w")
+        tk.Label(frame, text="Jumlah :", font=("Arial", 14),
+                 bg="#dfdff5").grid(row=1, column=0, sticky="w")
+        tk.Label(frame, text="Harga :", font=("Arial", 14),
+                 bg="#dfdff5").grid(row=2, column=0, sticky="w")
+
+        self.entry_nama = tk.Entry(frame, width=30)
+        self.entry_jumlah = tk.Entry(frame, width=30)
+        self.entry_harga = tk.Entry(frame, width=30)
+
+        self.entry_nama.grid(row=0, column=1, padx=10, pady=5)
+        self.entry_jumlah.grid(row=1, column=1, padx=10, pady=5)
+        self.entry_harga.grid(row=2, column=1, padx=10, pady=5)
+
+        # Tombol
+        button_frame = tk.Frame(app, bg="#dfdff5")
+        button_frame.pack(pady=15)
+
+        tk.Button(button_frame, text="Tambah", width=10, bg="#b99ef5",
+                  command=self.tambah_data).grid(row=0, column=0, padx=10)
+
+        tk.Button(button_frame, text="Update", width=10, bg="#7882f5",
+                  command=self.update_data).grid(row=0, column=1, padx=10)
+
+        tk.Button(button_frame, text="Hapus", width=10, bg="#b53af0",
+                  command=self.hapus_data).grid(row=0, column=2, padx=10)
+
+        tk.Button(button_frame, text="Clear", width=10, bg="#ff2c91",
+                  command=self.clear_input).grid(row=0, column=3, padx=10)
+
+        # Listbox Tampilkan Data
+        self.listbox = tk.Listbox(app, width=80, height=15)
+        self.listbox.pack(pady=10)
+        self.listbox.insert(tk.END, "Tidak ada data barang.")
+
+    def validasi_input(self, nama, jumlah, harga):
+        # Memakai WHILE untuk validasi terus sampai benar
+        while True:
+            if nama == "":
+                return False, "Nama barang tidak boleh kosong!"
+            try:
+                jumlah = int(jumlah)
+                harga = float(harga)
+                if jumlah < 0 or harga < 0:
+                    return False, "Jumlah dan harga harus bernilai positif!"
+                return True, ""
+            except:
+                return False, "Jumlah harus angka & Harga harus angka!"
+
+    # =================================================
+    # FUNGSI TOMBOL
+    # =================================================
+
+    def tambah_data(self):
+        nama = self.entry_nama.get()
+        jumlah = self.entry_jumlah.get()
+        harga = self.entry_harga.get()
+
+        valid, pesan = self.validasi_input(nama, jumlah, harga)
+        if not valid:
+            messagebox.showwarning("Input Salah", pesan)
+            return
+
+        barang = Barang(nama, int(jumlah), float(harga))
+        self.data.append(barang)
+        self.tampilkan_data()
+        self.clear_input()
+
+    def update_data(self):
+        try:
+            index = self.listbox.curselection()[0]
+        except:
+            messagebox.showwarning("Peringatan", "Pilih data yang ingin diupdate!")
+            return
+
+        nama = self.entry_nama.get()
+        jumlah = self.entry_jumlah.get()
+        harga = self.entry_harga.get()
+
+        valid, pesan = self.validasi_input(nama, jumlah, harga)
+        if not valid:
+            messagebox.showwarning("Input Salah", pesan)
+            return
+
+        barang = self.data[index]
+        barang.setNama(nama)
+        barang.setJumlah(int(jumlah))
+        barang.setHarga(float(harga))
+
+        self.tampilkan_data()
+        self.clear_input()
+
+    def hapus_data(self):
+        try:
+            index = self.listbox.curselection()[0]
+            self.data.pop(index)
+            self.tampilkan_data()
+        except:
+            messagebox.showwarning("Peringatan", "Pilih data yang ingin dihapus!")
+
+    def clear_input(self):
+        self.entry_nama.delete(0, tk.END)
+        self.entry_jumlah.delete(0, tk.END)
+        self.entry_harga.delete(0, tk.END)
+
+    def tampilkan_data(self):
+        self.listbox.delete(0, tk.END)
+        if len(self.data) == 0:
+            self.listbox.insert(tk.END, "Tidak ada data barang.")
+            return
+
+        for barang in self.data:
+            self.listbox.insert(tk.END, str(barang))
+
+root = tk.Tk()
+app = AplikasiInventaris(root)
+root.mainloop()
+
